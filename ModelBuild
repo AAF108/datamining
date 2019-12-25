@@ -1,12 +1,8 @@
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-import os
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
-
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
@@ -19,53 +15,19 @@ from sklearn.svm import SVC
 
 import pickle
 
-
 #DATA PREPERATION
-df = pd.read_csv("CreditCard_train.csv", index_col = "Unnamed: 0")
+df = pd.read_csv("CreditCard_train.csv", skiprows=1)
 #loading training data
-df.rename(columns=lambda x:x.lower(),inplace= True)
-#print(df.columns)
-df.columns = ['LIMIT_BAL','SEX','EDUCATION','MARRIAGE','AGE','PAY_0','PAY_2','PAY_3','PAY_4','PAY_5','PAY_6','BILL_AMT1','BILL_AMT2','BILL_AMT3','BILL_AMT4','BILL_AMT5','BILL_AMT6','PAY_AMT1','PAY_AMT2','PAY_AMT3','PAY_AMT4','PAY_AMT5','PAY_AMT6','default payment next month']
-#change each column name from x123 to actual name, maybe no need
-dummies = pd.get_dummies(df, columns=['SEX','EDUCATION','MARRIAGE'])
-#get dummies for sex education and marriage
-merged = pd.concat ([df,dummies],axis = 'columns')
-#merge the dummies to data
-pay_features = ['PAY_0','PAY_2','PAY_3','PAY_4','PAY_5','PAY_6']
-table = {}
-index_ = []
-for p in pay_features:
-    row = []
-    for x in range(24001):
-        if x>=1:
-            delay = df.loc[str(x), p]
-            if int(delay)>0 :
-                row.append(1)
-            else:
-                row.append(0)
-    table[p] = row
-for x in range(24000):
-    index_.append(x+1)
+# (rows,cols) = df.shape
 
+df = df.drop(['ID'], axis=1)
 
-dummies2 = pd.DataFrame(table)
-dummies2.index = index_
-merged2 = pd.concat ([df, dummies2], axis = "columns")
-final = merged.drop (['SEX','SEX_2','SEX_SEX','EDUCATION','MARRIAGE','EDUCATION_5','EDUCATION_6','EDUCATION_EDUCATION','MARRIAGE_MARRIAGE','MARRIAGE_3'],axis = 'columns')
-#drop repeating parts
-df.rename(columns={'default payment next month':'default'}, inplace=True)
-df = df.drop(['ID'], axis=0)
-
-#print(df.head(20))
 
 # Split-out validation dataset
 array = df.values
 X = array[:,0:23]
 y = array[:,23]
 X_train, X_validation, Y_train, Y_validation = train_test_split(X, y, test_size=0.2, random_state=1)
-
-
-#following the guide to select the best model
 
 '''
 models = []
@@ -86,9 +48,6 @@ for name, model in models:
 	print('%s: %f (%f)' % (name, cv_results.mean(), cv_results.std()))
 '''
 
-
-
-# Make predictions on validation dataset
 model = LinearDiscriminantAnalysis()
 model.fit(X_train, Y_train)
 predictions = model.predict(X_validation)
